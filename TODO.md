@@ -34,7 +34,7 @@
 
 ## Atualização da aba pública — em andamento
 - `PAINEL_PUBLICO` foi criada dentro da planilha operacional única como projeção por fórmula dos campos públicos aprovados. Alterações em `Projetos` recalculam a projeção; o Google pode levar alguns minutos para refletir a saída publicada.
-- O site ainda consulta o snapshot público anterior. Trocar a fonte somente após o proprietário publicar em CSV **apenas** a aba `PAINEL_PUBLICO`, testar que a resposta contém somente os 22 campos liberados e configurar `VITE_PUBLIC_SHEET_CSV_URL` no build do Pages.
+- O proprietário publicou em CSV somente a aba `PAINEL_PUBLICO`. A URL foi validada com HTTP 200 como `text/csv`, CORS permitido para o domínio GitHub Pages, 22 cabeçalhos autorizados e 191 registros; nenhuma coluna de contato, finanças, login, chave ou ID técnico está presente. O build local está apontado para essa fonte única; a sincronização ao GitHub Pages ainda está pendente.
 - O Apps Script e o acionador de 15 minutos preparados anteriormente não são necessários para este fluxo; não autorizar nem executar `syncPublicData` para atualizar a projeção. O botão **Atualizar dados** consulta novamente a fonte pública disponível.
 
 ## Publicação pública gratuita no GitHub — concluído

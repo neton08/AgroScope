@@ -3,7 +3,7 @@ import type { Coordinate, Project } from './types'
 
 export const PUBLIC_SHEET_CSV_URL =
   import.meta.env.VITE_PUBLIC_SHEET_CSV_URL?.trim() ||
-  'https://docs.google.com/spreadsheets/d/1T5th-xWhvAq-2Kc8eO9JNLRskZdsWhL88fXUzd5DAx0/gviz/tq?tqx=out:csv&sheet=PAINEL_PUBLICO'
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vQzprvZWg9Xl_EiHtOeUUUX0kk0C5tIWWtPNzmJ7uJhXNEmrksHAA9c9w4wS0LqAb0N7OS7AdEDBYSX/pub?gid=1163487700&single=true&output=csv'
 
 const SERVICE_FIELDS = [
   { key: 'PONTO FOCAL DE CAMPO', aliases: ['POSSUI PONTO FOCAL DE CAMPO? SIM/NÃO', 'PONTO FOCAL DE CAMPO? SIM/NÃO'] },

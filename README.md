@@ -54,7 +54,7 @@ A saída do workbook operacional único deve ser publicada como CSV **somente** 
 2. Use **Arquivo → Compartilhar → Publicar na Web**.
 3. No seletor, escolha a aba `PAINEL_PUBLICO`, e não `Documento inteiro`.
 4. Publique em CSV. O link gerado é de leitura pública; ele não concede edição.
-5. Teste o link e confirme que ele retorna apenas os 22 campos públicos. Configure essa URL como `VITE_PUBLIC_SHEET_CSV_URL` antes de trocar a fonte do mapa público.
+5. O AgroScope já está configurado para usar o CSV publicado da guia `PAINEL_PUBLICO`. A URL atual está no `.env.example` e no valor padrão do adaptador público. Em alterações futuras, valide que a resposta contém somente os 22 campos liberados antes de atualizar essa URL.
 
 Mantenha o acesso geral do workbook como **Restrito** e compartilhe o arquivo completo somente com pessoas autorizadas. Publicar uma aba é diferente de disponibilizar o documento inteiro. **Não publique o documento inteiro**, pois isso revelaria as abas privadas.
 
