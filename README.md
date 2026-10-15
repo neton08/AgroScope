@@ -1,4 +1,4 @@
-# Gestão de Atuação
+# AgroScope
 
 Painel público para consulta territorial da equipe e dos atendimentos a fazendas. A aplicação estática lê somente os 22 campos curados da planilha `PAINEL_PUBLICO`; a planilha operacional completa não é carregada pelo navegador e seu link de edição não faz parte do site.
 

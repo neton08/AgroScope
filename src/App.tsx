@@ -31,7 +31,7 @@ function Header({ lastUpdated, refreshing, onRefresh }: { lastUpdated: Date | nu
           </svg>
         </div>
         <div className="brand-name-block">
-          <strong>Gestão de Atuação</strong>
+          <strong>AgroScope</strong>
           <span>VISÃO TERRITORIAL · BRASIL</span>
         </div>
       </div>
