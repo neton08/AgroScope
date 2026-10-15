@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Gestão de Atuação">
+  <rect width="64" height="64" rx="18" fill="#12313b"/>
+  <path d="M32 8c-10.2 0-18.4 8.2-18.4 18.4 0 13.8 18.4 29.6 18.4 29.6s18.4-15.8 18.4-29.6C50.4 16.2 42.2 8 32 8Z" fill="#197a5b"/>
+  <circle cx="32" cy="26.5" r="7.2" fill="#f3f6f3"/>
+  <path d="M17 18h7m16 25h8M18 44h10" stroke="#dbe8dd" stroke-width="2.6" stroke-linecap="round" opacity=".9"/>
+  <circle cx="17" cy="18" r="2.5" fill="#d2a15e"/><circle cx="48" cy="43" r="2.5" fill="#d2a15e"/><circle cx="18" cy="44" r="2.5" fill="#d2a15e"/>
+</svg>
