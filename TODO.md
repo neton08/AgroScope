@@ -48,8 +48,10 @@
 - O usuário pediu: “Mude o nome onde está Gestão de Atuação para AgroScope.” Nome visível, título do navegador, metadados, favicon acessível, README e manifesto foram atualizados; o novo build foi enviado ao GitHub Pages.
 
 
-## Política de privacidade pública — em andamento
-- Publicar `https://neton08.github.io/AgroScope/privacy.html` com o texto aprovado pelo usuário e contato `alcneto08@gmail.com`; página inicial `https://neton08.github.io/AgroScope/`.
+## Política de privacidade pública — concluído
+- A página publicada em `https://neton08.github.io/AgroScope/privacy.html` contém o texto aprovado pelo usuário e o contato `alcneto08@gmail.com`; a página inicial é `https://neton08.github.io/AgroScope/`.
 - Explicar que a pessoa entra com Google e seleciona uma planilha no Picker; o AgroScope lê e mostra dados no navegador sem armazená-los em servidor do site; acesso à base privada depende das permissões do Google Drive; a versão pública mostra somente `PAINEL_PUBLICO`; coordenadas usadas para rotas são enviadas ao OpenRouteService; solicitações de privacidade podem ser enviadas ao contato de suporte.
 - Incluir links para a política na página inicial e no cartão de login do painel privado; manter a página acessível sem login e sem dados da planilha, com título/descrição/URL canônica.
-- Depois da publicação, cadastrar essa URL e a página inicial na seção Branding do Google Auth Platform; publicar o consentimento OAuth somente após o Google permitir a alteração de status.
+
+## Publicação do consentimento OAuth — pendente
+- No Google Auth Platform, cadastrar a página inicial e a URL da política em Branding, salvar e, quando habilitado, mudar o status de “Testing” para “In production”. O Google pode exigir revisão/verificação de branding antes da mudança. Isso elimina a lista de usuários de teste; cada gestor ainda precisa de permissão explícita no arquivo Google Drive.
