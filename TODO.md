@@ -26,11 +26,11 @@
 
 ## Painel privado, login Google e integração do HTML — em andamento
 - O usuário escolheu “Google Sign-In — gestores usarão contas Google” e confirmou uma versão privada para consultar mais informações. Implementar uma ação de login Google no site e carregar as abas privadas somente depois de o usuário autenticar e autorizar o arquivo no Google Picker; usar o escopo de menor privilégio `drive.file`, sem persistir access tokens em `localStorage`.
-- Se a conta Google não tiver permissão no arquivo selecionado, mostrar erro de acesso e não retornar nem renderizar os dados privados. O site e o código podem continuar públicos no GitHub Pages, mas o bundle não contém dados da planilha nem credenciais; a autorização Google e as permissões da planilha controlam o acesso aos registros.
+- Se a conta Google não tiver permissão no arquivo selecionado, mostrar erro de acesso e não retornar nem renderizar os dados privados. O site e o código podem continuar públicos no GitHub Pages, mas o bundle não contém dados da planilha, tokens nem Client Secret. Client ID, número do projeto e a chave restrita do Picker são configurações públicas esperadas no navegador; a autorização Google e as permissões da planilha controlam o acesso aos registros.
 - Reaproveitar no AgroScope recursos do HTML legado — visão geral, fila de atenção, pulso da operação, indicadores por gestor, análises de status/contratos, filtros e tabela — como componentes integrados à aplicação React e conectados à mesma planilha, não como HTML independente.
 - Incluir dados empresariais e de contato/contratos do HTML legado somente dentro da sessão autorizada. Excluir logins, senhas, tokens, chaves SGPA e IDs técnicos mesmo da experiência privada.
 - Login e acesso ao painel não devem depender de importar Excel manualmente nem deixar cópias de dados no navegador após sair. Logout limpa o token em memória.
-- A configuração do OAuth Client ID, Google Picker/API key, origem autorizada e e-mails dos gestores ainda precisa ser concluída.
+- Client ID, número do projeto e chave restrita do Picker foram configurados e publicados; o Client Secret não é utilizado pelo app. Ainda falta confirmar que a Google Sheets API está habilitada, incluir as contas autorizadas em “Usuários de teste” se o app OAuth estiver em Testing, e compartilhar a base com os e-mails dos gestores autorizados. A lista de gestores e o teste de login ponta a ponta continuam pendentes.
 
 ## Atualização da aba pública — concluído
 - `PAINEL_PUBLICO` foi criada dentro da planilha operacional única como projeção por fórmula dos campos públicos aprovados. Alterações em `Projetos` recalculam a projeção; o Google pode levar alguns minutos para refletir a saída publicada.
