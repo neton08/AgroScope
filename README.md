@@ -16,7 +16,7 @@ Os valores abaixo são identificadores/chaves de frontend e aparecem no JavaScri
 
 1. Em um projeto Google Cloud, habilite **Google Sheets API** e **Google Picker API** e configure a tela de consentimento OAuth para as contas dos gestores.
 2. Crie um **OAuth Client ID** do tipo **Web application**. Adicione como origens JavaScript autorizadas `https://neton08.github.io` e, para desenvolvimento, `http://localhost:3000` — informe somente as origens, sem caminho `/AgroScope/`.
-3. Crie uma API key para o Picker. Restrinja-a a HTTP referrers `https://neton08.github.io/*` e `http://localhost:3000/*`, e limite as APIs habilitadas à **Google Picker API**.
+3. Crie uma API key para o Picker. Restrinja-a a HTTP referrers `https://neton08.github.io/*`, `http://localhost:3000/*` e `https://docs.google.com/*` (necessário porque o Picker é exibido dentro de um iframe do Google); limite as APIs habilitadas à **Google Picker API**.
 4. Anote o número do projeto Google Cloud — não o Client ID — para `VITE_GOOGLE_APP_ID`.
 5. Copie `.env.example` para `.env.local` e preencha `VITE_GOOGLE_CLIENT_ID`, `VITE_GOOGLE_PICKER_API_KEY`, `VITE_GOOGLE_APP_ID` e `OPENROUTESERVICE_API_KEY`. `.env.local` é ignorado pelo Git. Não crie nem compartilhe um client secret; este app não usa um.
 6. Faça o build do Pages localmente com essas variáveis no ambiente e envie a nova saída `docs/` para a branch `main`. Os valores OAuth/Picker são identificadores públicos, mas devem permanecer restritos às origens e APIs indicadas.
