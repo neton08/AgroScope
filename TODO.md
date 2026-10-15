@@ -32,9 +32,9 @@
 - Login e acesso ao painel não devem depender de importar Excel manualmente nem deixar cópias de dados no navegador após sair. Logout limpa o token em memória.
 - A configuração do OAuth Client ID, Google Picker/API key, origem autorizada e e-mails dos gestores ainda precisa ser concluída.
 
-## Atualização da aba pública — em andamento
+## Atualização da aba pública — concluído
 - `PAINEL_PUBLICO` foi criada dentro da planilha operacional única como projeção por fórmula dos campos públicos aprovados. Alterações em `Projetos` recalculam a projeção; o Google pode levar alguns minutos para refletir a saída publicada.
-- O proprietário publicou em CSV somente a aba `PAINEL_PUBLICO`. A URL foi validada com HTTP 200 como `text/csv`, CORS permitido para o domínio GitHub Pages, 22 cabeçalhos autorizados e 191 registros; nenhuma coluna de contato, finanças, login, chave ou ID técnico está presente. O build local está apontado para essa fonte única; a sincronização ao GitHub Pages ainda está pendente.
+- O proprietário publicou em CSV somente a aba `PAINEL_PUBLICO`. A URL foi validada com HTTP 200 como `text/csv`, CORS permitido para o domínio GitHub Pages, 22 cabeçalhos autorizados e 191 registros; nenhuma coluna de contato, finanças, login, chave ou ID técnico está presente. O site público foi atualizado e confirmado servindo o novo bundle ligado à fonte única, em vez do snapshot público antigo.
 - O Apps Script e o acionador de 15 minutos preparados anteriormente não são necessários para este fluxo; não autorizar nem executar `syncPublicData` para atualizar a projeção. O botão **Atualizar dados** consulta novamente a fonte pública disponível.
 
 ## Publicação pública gratuita no GitHub — concluído
