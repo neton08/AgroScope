@@ -77,6 +77,12 @@ export default function App() {
   const baseLocalityToken = useRef(0)
   const [visibility, setVisibility] = useState<VisibilityOptions>({ team: true, farms: true, routes: true, areas: false })
   const [privatePanel, setPrivatePanel] = useState(false)
+  const [privatePanelMounted, setPrivatePanelMounted] = useState(false)
+
+  const openPrivatePanel = () => {
+    setPrivatePanelMounted(true)
+    setPrivatePanel(true)
+  }
 
   useEffect(() => {
     let active = true
@@ -265,11 +271,11 @@ export default function App() {
     setVisibility((current) => ({ ...current, areas: false }))
   }
 
-  if (privatePanel) return <Suspense fallback={<div role="status" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', color: '#244c43' }}>Carregando área de gestores…</div>}><PrivateDashboard onBack={() => setPrivatePanel(false)} /></Suspense>
-
   return (
-    <div className="app-shell">
-      <Header lastUpdated={lastUpdated} refreshing={refreshing} onRefresh={refresh} onPrivate={() => setPrivatePanel(true)} />
+    <>
+      {!privatePanel && (
+      <div className="app-shell">
+      <Header lastUpdated={lastUpdated} refreshing={refreshing} onRefresh={refresh} onPrivate={openPrivatePanel} />
       <FiltersBar
         managers={managers}
         regions={regions}
@@ -343,6 +349,15 @@ export default function App() {
         <a href={`${import.meta.env.BASE_URL}privacy.html`}>Política de privacidade</a>
       </footer>
       <div className="sr-only" aria-live="polite">{routeStatus === 'loading' ? 'Calculando rota e tempo estimado.' : routeStatus === 'success' ? 'Rota estimada calculada.' : ''}</div>
-    </div>
+      </div>
+      )}
+      {privatePanelMounted && (
+        <div hidden={!privatePanel}>
+          <Suspense fallback={<div role="status" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', color: '#244c43' }}>Carregando área de gestores…</div>}>
+            <PrivateDashboard onBack={() => setPrivatePanel(false)} />
+          </Suspense>
+        </div>
+      )}
+    </>
   )
 }
