@@ -320,6 +320,7 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
               {busy ? 'Conectando…' : 'Acessar com Google'}
             </button>
             <div className="private-security-note"><ShieldCheck size={15} /> Login Google · acesso concedido pelo Drive · dados mantidos só na memória da sessão</div>
+            <a className="private-privacy-link" href={`${import.meta.env.BASE_URL}privacy.html`}>Política de privacidade</a>
           </section>
         </main>
       ) : !workbook ? (

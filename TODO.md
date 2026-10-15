@@ -46,3 +46,10 @@
 ## Marca e legibilidade — concluído
 - O usuário informou: “Essa aba ficou com as letras pequenas.” A tipografia do painel de detalhes foi aumentada, com rótulos, localidades, distâncias, indicadores de serviço e notas mais legíveis, preservando a responsividade.
 - O usuário pediu: “Mude o nome onde está Gestão de Atuação para AgroScope.” Nome visível, título do navegador, metadados, favicon acessível, README e manifesto foram atualizados; o novo build foi enviado ao GitHub Pages.
+
+
+## Política de privacidade pública — em andamento
+- Publicar `https://neton08.github.io/AgroScope/privacy.html` com o texto aprovado pelo usuário e contato `alcneto08@gmail.com`; página inicial `https://neton08.github.io/AgroScope/`.
+- Explicar que a pessoa entra com Google e seleciona uma planilha no Picker; o AgroScope lê e mostra dados no navegador sem armazená-los em servidor do site; acesso à base privada depende das permissões do Google Drive; a versão pública mostra somente `PAINEL_PUBLICO`; coordenadas usadas para rotas são enviadas ao OpenRouteService; solicitações de privacidade podem ser enviadas ao contato de suporte.
+- Incluir links para a política na página inicial e no cartão de login do painel privado; manter a página acessível sem login e sem dados da planilha, com título/descrição/URL canônica.
+- Depois da publicação, cadastrar essa URL e a página inicial na seção Branding do Google Auth Platform; publicar o consentimento OAuth somente após o Google permitir a alteração de status.

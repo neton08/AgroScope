@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Política de Privacidade — AgroScope</title>
+    <meta name="description" content="Como o AgroScope usa o login Google, acessa a planilha operacional, publica o resumo PAINEL_PUBLICO e calcula rotas agrícolas." />
+    <meta name="keywords" content="AgroScope, privacidade, proteção de dados, Google Planilhas, login Google, OpenRouteService" />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://neton08.github.io/AgroScope/privacy.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Política de Privacidade — AgroScope" />
+    <meta property="og:description" content="Informações sobre acesso, uso e proteção dos dados no AgroScope." />
+    <meta property="og:url" content="https://neton08.github.io/AgroScope/privacy.html" />
+    <meta property="og:site_name" content="AgroScope" />
+    <meta property="og:image" content="https://neton08.github.io/AgroScope/favicon.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Política de Privacidade — AgroScope" />
+    <meta name="twitter:description" content="Informações sobre acesso, uso e proteção dos dados no AgroScope." />
+    <meta name="twitter:image" content="https://neton08.github.io/AgroScope/favicon.svg" />
+    <style>
+      :root { color-scheme: light; --ink:#17343a; --muted:#5f716b; --green:#197a5b; --line:#dfe8e2; --paper:#fff; --wash:#f2f6f3; }
+      * { box-sizing: border-box; }
+      body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif; }
+      header { padding:22px max(22px,calc((100% - 920px)/2)); background:#12313b; color:#fff; }
+      .brand { display:flex; align-items:center; gap:12px; }
+      .mark { width:42px; height:42px; display:grid; place-items:center; border-radius:14px 14px 14px 5px; color:#143b38; background:#8dd2a8; font-size:21px; font-weight:800; }
+      .brand strong { display:block; font-size:20px; line-height:1.2; }
+      .brand span { color:#b5cec2; font-size:10px; font-weight:800; letter-spacing:1.1px; }
+      main { width:min(100% - 32px,920px); margin:34px auto; padding:clamp(22px,5vw,48px); border:1px solid var(--line); border-radius:18px; background:var(--paper); box-shadow:0 16px 44px rgba(21,63,47,.07); }
+      h1,h2 { color:#15363b; line-height:1.25; }
+      h1 { margin:0 0 8px; font-size:clamp(28px,5vw,38px); letter-spacing:-.6px; }
+      h2 { margin:30px 0 8px; font-size:20px; }
+      p { margin:10px 0; }
+      .updated { margin:0 0 22px; color:var(--muted); font-size:14px; }
+      a { color:#126548; font-weight:650; text-underline-offset:3px; }
+      .notice { margin:20px 0; padding:15px 18px; border-left:4px solid var(--green); border-radius:8px; background:#eef7f0; }
+      footer { width:min(100% - 32px,920px); margin:0 auto 34px; color:var(--muted); font-size:14px; }
+      @media (max-width:600px) { header { padding:18px 16px; } main { margin:18px auto; border-radius:12px; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="./" style="color:inherit;text-decoration:none" aria-label="Voltar ao AgroScope">
+        <span class="mark" aria-hidden="true">A</span>
+        <span><strong>AgroScope</strong><span>VISÃO TERRITORIAL · BRASIL</span></span>
+      </a>
+    </header>
+    <main>
+      <h1>Política de Privacidade</h1>
+      <p class="updated">Última atualização: 15 de outubro de 2026</p>
+      <p>Esta política explica como o AgroScope apresenta informações operacionais agrícolas e como os dados são tratados ao usar o painel público e a área privada de gestores.</p>
+
+      <h2>Login e acesso à planilha</h2>
+      <p>Na área de gestores, a pessoa entra com uma conta Google e escolhe uma planilha no seletor oficial do Google Drive (Google Picker). O acesso aos dados privados depende das permissões que o proprietário definiu no Google Drive. O AgroScope não concede acesso à planilha nem envia convites em nome do proprietário.</p>
+
+      <h2>Uso dos dados no painel privado</h2>
+      <p>Após o login e a seleção de um arquivo autorizado, o navegador consulta pelo Google Sheets API apenas as abas e colunas necessárias às telas do painel. Os registros e o token de acesso são mantidos somente na memória da sessão do navegador: o AgroScope não copia a planilha para seus servidores, não grava os registros em armazenamento local do navegador e não os inclui no código público. Ao sair, a sessão e os dados exibidos são removidos do estado da aplicação.</p>
+      <p>Os dados podem incluir informações de projetos, colaboradores, gestores, clientes, contatos, equipamentos, serviços e acompanhamento contratual disponíveis na planilha escolhida. Logins, senhas, tokens, chaves e identificadores técnicos não são exibidos pelo painel.</p>
+
+      <h2>Informações públicas</h2>
+      <p>O mapa aberto do AgroScope consulta somente a aba derivada <strong>PAINEL_PUBLICO</strong>, publicada em formato de leitura pública. Ela contém os campos operacionais aprovados para divulgação, como nomes de colaboradores, gestores e regionais, fazendas/unidades e cidades atendidas, coordenadas disponíveis, distâncias, raios, área e indicadores de serviço. As abas privadas da planilha operacional não são usadas pelo mapa público.</p>
+      <div class="notice"><strong>Importante:</strong> publicar a aba PAINEL_PUBLICO torna o conteúdo dessa aba acessível publicamente. O arquivo operacional completo deve permanecer com acesso restrito e ser compartilhado apenas com pessoas autorizadas pelo proprietário.</div>
+
+      <h2>Rotas e serviços externos</h2>
+      <p>Quando alguém solicita uma rota ou estimativa de deslocamento, as coordenadas necessárias são enviadas ao OpenRouteService para calcular o trajeto e o tempo estimado. O serviço pode processar essa solicitação conforme seus próprios termos e política de privacidade. As rotas são estimativas e não representam tráfego ao vivo.</p>
+      <p>O login, o seletor de arquivos e a leitura da planilha usam serviços Google. As regras de dados desses serviços também se aplicam às respectivas operações.</p>
+
+      <h2>Controle, retenção e solicitações</h2>
+      <p>O proprietário da planilha controla quem pode abrir ou editar o arquivo no Google Drive. O AgroScope não mantém uma cópia dos registros privados em servidor próprio. Para solicitar informações sobre esta política ou sobre o tratamento de dados no AgroScope, escreva para <a href="mailto:alcneto08@gmail.com">alcneto08@gmail.com</a>.</p>
+
+      <p><a href="./">Voltar ao painel AgroScope</a></p>
+    </main>
+    <footer>AgroScope · Painel de coordenação agrícola</footer>
+  </body>
+</html>

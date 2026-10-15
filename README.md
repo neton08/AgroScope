@@ -10,6 +10,8 @@ Painel territorial para gestão de atendimento agrícola. O GitHub Pages apresen
 - Compartilhe o workbook somente com contas Google autorizadas. Quem não tiver permissão no arquivo não poderá ler suas abas, mesmo conhecendo o endereço do site. A seleção de uma planilha no Picker não concede acesso adicional.
 - E-mails, telefones, ARR e dados contratuais aparecem somente dentro da sessão autorizada. Senhas, logins, tokens, chaves SGPA e IDs técnicos não são exibidos.
 
+Política pública: [https://neton08.github.io/AgroScope/privacy.html](https://neton08.github.io/AgroScope/privacy.html). Essa URL também deve constar no campo **Privacy Policy URL** de Branding no Google Auth Platform.
+
 ## Configurar Google Sign-In e Google Picker
 
 Os valores abaixo são identificadores/chaves de frontend e aparecem no JavaScript publicado; **não use client secret** no site estático. Restrinja-os na Google Cloud Console.

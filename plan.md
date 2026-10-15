@@ -70,3 +70,9 @@ O site público continuará no GitHub Pages gratuito e mostrará somente os camp
 ## Dependências e operação
 
 React/TypeScript/Vite, Leaflet/react-leaflet e PapaParse são usados no frontend. Google Identity Services autentica o usuário; Google Picker com `drive.file` limita a autorização aos arquivos escolhidos; Google Sheets API lê os dados após autorização. Google Sheets fornece os registros privados e a saída curada; OpenStreetMap fornece tiles; ORS fornece geocodificação e rotas sob demanda. O build `build:pages` gera `docs/` para branch `main`/pasta `/docs`; o bundle não contém dados privados. OAuth Client ID e Picker API key são públicos, sujeitos a restrições por origem/API. A chave ORS aparece no bundle compilado conforme autorização explícita do usuário. A aba pública é derivada por fórmula da aba `Projetos`; o site consulta o CSV publicado somente dessa aba.
+
+## Política de privacidade pública
+
+- Publicar `https://neton08.github.io/AgroScope/privacy.html` com a política aprovada pelo usuário e o contato `alcneto08@gmail.com`; a página inicial continua em `https://neton08.github.io/AgroScope/`.
+- Informar que o usuário entra com Google e seleciona uma planilha no Picker; a aplicação lê e mostra dados no navegador sem armazená-los em servidor AgroScope; o acesso à base privada depende das permissões do Google Drive; o site público mostra somente `PAINEL_PUBLICO`; coordenadas usadas para calcular rotas são enviadas ao OpenRouteService; solicitações de privacidade podem ser encaminhadas ao e-mail de suporte.
+- Disponibilizar um link para a política na página inicial e na tela de login; manter a página como HTML estático acessível sem autenticação, com título, descrição e URL canônica, sem incluir dados privados.

@@ -339,6 +339,7 @@ export default function App() {
         <span><span className="footer-dot" /> Planilha pública curada conectada</span>
         <span>Snapshot público · {formatNumber(stats.totalProjects)} unidades · {formatNumber(stats.employeeCount)} colaboradores · atualizar manualmente</span>
         <a href={PUBLIC_SHEET_URL} target="_blank" rel="noreferrer">PAINEL_PUBLICO <ExternalLink size={11} /></a>
+        <a href={`${import.meta.env.BASE_URL}privacy.html`}>Política de privacidade</a>
       </footer>
       <div className="sr-only" aria-live="polite">{routeStatus === 'loading' ? 'Calculando rota e tempo estimado.' : routeStatus === 'success' ? 'Rota estimada calculada.' : ''}</div>
     </div>
