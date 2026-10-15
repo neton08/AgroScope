@@ -36,6 +36,7 @@ export interface PrivateWorkbook {
   contacts: PrivateContact[]
   contactsAvailable: boolean
   warnings: string[]
+  loadedAt: Date
 }
 
 interface SpreadsheetMetadata {
@@ -63,7 +64,7 @@ const PROJECT_FIELDS = [
   ['STATUS'],
   ['DATA VENCI. CONTRATO', 'DATA VENCIMENTO CONTRATO'],
   ['ARR'],
-  ['VALOR TOTAL DO CONTRATO'],
+  ['VALOR TOTAL DO CONTRATO', 'VALOR TOTAL CONTRATO'],
   ['TEMPO DE CONTRATO'],
   ['ÁREA (ha)', 'AREA (ha)', 'ÁREA', 'AREA'],
   ['Distância (km)', 'DISTÂNCIA', 'DISTANCIA (KM)'],
@@ -180,6 +181,11 @@ function numberFromCell(value: unknown): number | null {
 }
 
 function parseDate(value: unknown): Date | null {
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : new Date(value.getFullYear(), value.getMonth(), value.getDate())
+  if (typeof value === 'number' && value > 1 && value < 100000) {
+    const serialDate = new Date(new Date(1899, 11, 30).getTime() + value * 86_400_000)
+    return Number.isNaN(serialDate.getTime()) ? null : new Date(serialDate.getFullYear(), serialDate.getMonth(), serialDate.getDate())
+  }
   const source = asText(value)
   if (!source) return null
   const br = source.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/)
@@ -192,13 +198,9 @@ function parseDate(value: unknown): Date | null {
     const date = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]))
     return Number.isNaN(date.getTime()) ? null : date
   }
+  if (/^\d+(\.\d+)?$/.test(source)) return parseDate(Number(source))
   const parsed = new Date(source)
   return Number.isNaN(parsed.getTime()) ? null : parsed
-}
-
-function yes(value: string): boolean {
-  const key = normalize(value)
-  return ['SIM', 'S', 'YES', 'TRUE', '1', 'OK', 'DISTRATO'].includes(key)
 }
 
 function objectRows(rows: unknown[][]): Array<Record<string, string>> {
@@ -258,13 +260,23 @@ function privateProjects(rows: unknown[][]): PrivateProject[] {
       status,
       contractEnd: parseDate(field(row, 'DATA VENCI. CONTRATO', 'DATA VENCIMENTO CONTRATO')),
       contractTerm: field(row, 'TEMPO DE CONTRATO'),
-      contractValue: numberFromCell(field(row, 'VALOR TOTAL DO CONTRATO')),
+      contractValue: numberFromCell(field(row, 'VALOR TOTAL DO CONTRATO', 'VALOR TOTAL CONTRATO')),
       arr: numberFromCell(field(row, 'ARR')),
       charge: field(row, 'COBRANÇA DE SERVIÇO') || 'Não informado',
-      termination: yes(terminationValue) || normalize(status).includes('DISTRATO'),
+      termination: normalize(terminationValue).startsWith('S'),
       services,
     }
-  }).filter((project) => project.collaborator !== 'Sem colaborador informado' || project.client !== 'Cliente não informado' || project.farm !== 'Fazenda/unidade não informada')
+  }).filter((project) => project.collaborator !== 'Sem colaborador informado' || project.client !== 'Cliente não informado' || project.farm !== 'Fazenda/unidade não informada' || project.manager !== 'Não informado')
+}
+
+// Ao importar um XLSX local, limitar a leitura ao mesmo conjunto operacional permitido no painel.
+export function parsePrivateProjectsFromRows(rows: unknown[][]): PrivateProject[] {
+  if (rows.length < 2) return []
+  const selection = selectColumns(rows[0] ?? [], PROJECT_FIELDS)
+  if (!selection.columns.length) return []
+  const safeRows: unknown[][] = [selection.columns.map((column) => column.header)]
+  for (const row of rows.slice(1)) safeRows.push(selection.columns.map((column) => row[column.index] ?? ''))
+  return privateProjects(safeRows)
 }
 
 function privateContacts(rows: unknown[][]): PrivateContact[] {
@@ -321,5 +333,6 @@ export async function loadPrivateWorkbook(accessToken: string, spreadsheetId: st
     contacts,
     contactsAvailable: Boolean(contactSheet),
     warnings,
+    loadedAt: new Date(),
   }
 }

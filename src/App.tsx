@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, ExternalLink, RefreshCw, Sprout } from 'lucide-react'
 import FiltersBar, { type VisibilityOptions } from './components/FiltersBar'
 import StatsBar from './components/StatsBar'
 import TeamList from './components/TeamList'
 import DetailPanel from './components/DetailPanel'
-import PrivateDashboard from './components/PrivateDashboard'
 import MapView from './components/MapView'
 import { fetchProjects } from './data/sheets'
 import type { Project, RouteInfo } from './data/types'
 import { buildEmployees, calculateStats, uniqueValues } from './data/metrics'
 import { calculateRoute, reverseGeocodeBase } from './lib/routes'
 import { formatNumber, normalizeKey } from './lib/format'
+
+const PrivateDashboard = lazy(() => import('./components/PrivateDashboard'))
 
 const PUBLIC_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1T5th-xWhvAq-2Kc8eO9JNLRskZdsWhL88fXUzd5DAx0/edit'
 
@@ -264,7 +265,7 @@ export default function App() {
     setVisibility((current) => ({ ...current, areas: false }))
   }
 
-  if (privatePanel) return <PrivateDashboard onBack={() => setPrivatePanel(false)} />
+  if (privatePanel) return <Suspense fallback={<div role="status" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', color: '#244c43' }}>Carregando área de gestores…</div>}><PrivateDashboard onBack={() => setPrivatePanel(false)} /></Suspense>
 
   return (
     <div className="app-shell">

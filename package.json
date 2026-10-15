@@ -21,7 +21,8 @@
     "papaparse": "5.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-leaflet": "5.0.0"
+    "react-leaflet": "5.0.0",
+    "xlsx": "0.18.5"
   },
   "devDependencies": {
     "@types/leaflet": "1.9.16",
