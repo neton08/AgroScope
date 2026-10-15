@@ -189,7 +189,10 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
     }
     return [...groups.values()].sort((a, b) => b.area - a.area)
   }, [filteredProjects])
-  const activeCount = filteredProjects.filter((project) => normalized(project.status).includes('ativ')).length
+  const activeCount = filteredProjects.filter((project) => {
+    const status = normalized(project.status)
+    return status.includes('ativ') && !status.includes('inativ') && !status.includes('desativ')
+  }).length
   const billedCount = filteredProjects.filter((project) => isPositive(project.charge)).length
   const missingContractDateCount = filteredProjects.filter((project) => project.contractEnd === null).length
   const statusSummary = useMemo(() => {
