@@ -27,6 +27,8 @@
 .private-button-ghost:hover:not(:disabled) { background: #f4f9f6; border-color: #b7d6c4; }
 .private-button-back { color: #eef7f2; border-color: rgba(255,255,255,.24); background: rgba(255,255,255,.07); }
 .private-button-back:hover { background: rgba(255,255,255,.15); }
+.private-button-overview { color: #176c50; border-color: #b8d8c4; background: #eff7f1; }
+.private-button-overview:hover:not(:disabled) { border-color: #87bd9b; background: #e4f2e8; }
 .private-button-primary { color: #fff; background: #197a5b; box-shadow: 0 5px 14px rgba(25,122,91,.17); }
 .private-button-primary:hover:not(:disabled) { background: #116b4e; }
 .private-icon-button { width: 38px; height: 38px; display: grid; place-items: center; color: #eef7f2; border: 1px solid rgba(255,255,255,.24); border-radius: 8px; background: rgba(255,255,255,.07); }
@@ -50,8 +52,9 @@
 .private-alert, .private-warning { display: flex; align-items: flex-start; gap: 9px; margin: 13px 0; padding: 11px 13px; border: 1px solid #f0d2c9; border-radius: 9px; color: #873d32; background: #fff3f0; font-size: 13px; line-height: 1.5; }
 .private-alert svg, .private-warning svg { flex: 0 0 auto; margin-top: 1px; }
 .private-warning { border-color: #eadbb8; color: #765b26; background: #fff9ed; }
-.private-nav { position: sticky; top: 0; z-index: 5; display: flex; gap: 4px; padding: 0 24px; overflow-x: auto; border-bottom: 1px solid var(--private-line); background: #fff; }
-.private-nav button { position: relative; min-height: 51px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; color: #687d75; border: 0; border-bottom: 3px solid transparent; background: transparent; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.private-nav-sticky { position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--private-line); background: #fff; }
+.private-nav { display: flex; gap: 4px; padding: 0 24px; overflow-x: auto; }
+.private-nav button { position: relative; flex: 0 0 auto; min-height: 51px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; color: #687d75; border: 0; border-bottom: 3px solid transparent; background: transparent; font-size: 13px; font-weight: 700; white-space: nowrap; }
 .private-nav button:hover { color: #1c5d48; background: #f8fbf9; }
 .private-nav button.is-active { color: #166e50; border-bottom-color: #23805d; }
 .private-nav-count, .private-count-pill { min-width: 24px; padding: 3px 7px; border-radius: 20px; color: #48735c; background: #eaf4ed; font-size: 11px; font-weight: 800; text-align: center; }
@@ -327,7 +330,7 @@ button.private-kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 22px r
 
 /* Tema escuro preserva contraste para a área privada */
 .private-shell.is-dark { --private-ink: #e5eee8; --private-muted: #a2b3aa; --private-line: #2b3b43; background: #101820; color: #e5eee8; }
-.private-shell.is-dark .private-nav, .private-shell.is-dark .private-footer { color: #aebeb5; border-color: #2b3b43; background: #17232c; }
+.private-shell.is-dark .private-nav-sticky, .private-shell.is-dark .private-footer { color: #aebeb5; border-color: #2b3b43; background: #17232c; }
 .private-shell.is-dark .private-nav button { color: #b1c0b8; }
 .private-shell.is-dark .private-nav button.is-active { color: #98d0ad; border-bottom-color: #73bd8b; }
 .private-shell.is-dark .private-main h1, .private-shell.is-dark .private-heading-row h1 { color: #ecf4ef; }

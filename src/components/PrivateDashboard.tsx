@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, ReactNode } from 'react'
 import { AlertCircle, ArrowLeft, BarChart3, Boxes, BriefcaseBusiness, CalendarClock, Download, FileSpreadsheet, LogOut, Moon, RefreshCw, Search, ShieldCheck, Sun, Trash2, Users } from 'lucide-react'
 import { chooseSpreadsheet, GoogleApiError, missingGoogleConfiguration, signInWithGoogle } from '../lib/googleDrive'
@@ -71,6 +71,7 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const localFileInput = useRef<HTMLInputElement>(null)
+  const privateShellRef = useRef<HTMLDivElement>(null)
   const missingConfig = missingGoogleConfiguration()
   const projects = localProjects ?? workbook?.projects ?? []
   const filteredProjects = useMemo(() => filterProjects(projects, projectFilters), [projects, projectFilters])
@@ -79,6 +80,11 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
     return (workbook?.contacts ?? []).filter((contact) => !query || [contact.vertical, contact.client, contact.name, contact.role, contact.email, contact.phone].some((value) => normalize(value).includes(query)))
   }, [contactSearch, workbook])
   const currentView = VIEWS.find((view) => view.id === activeView) ?? VIEWS[0]
+
+  useLayoutEffect(() => {
+    privateShellRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [activeView])
 
   const loadSelected = async (file: PickedSpreadsheet, accessToken: string) => {
     setBusy(true)
@@ -269,7 +275,7 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className={`private-shell ${theme === 'dark' ? 'is-dark' : ''}`}>
+    <div ref={privateShellRef} className={`private-shell ${theme === 'dark' ? 'is-dark' : ''}`}>
       <header className="private-topbar">
         <div className="private-brand">
           <div className="private-brand-mark" aria-hidden="true">A</div>
@@ -312,15 +318,18 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
         </main>
       ) : (
         <>
-          <nav className="private-nav" aria-label="Seções da área de gestores">
-            {VIEWS.map((view) => <button type="button" key={view.id} className={activeView === view.id ? 'is-active' : ''} onClick={() => setActiveView(view.id)}>
+          <nav className="private-nav-sticky" aria-label="Seções da área de gestores">
+            <div className="private-nav">
+            {VIEWS.map((view) => <button type="button" key={view.id} className={activeView === view.id ? 'is-active' : ''} aria-current={activeView === view.id ? 'page' : undefined} onClick={() => setActiveView(view.id)}>
               {view.icon}{view.label}{view.id === 'contacts' && <span className="private-nav-count">{workbook.contacts.length}</span>}{view.id === 'projects' && <span className="private-nav-count">{projects.length}</span>}
             </button>)}
+            </div>
           </nav>
           <main className="private-main">
             <div className="private-heading-row">
               <div><span className="private-eyebrow">BASE PRIVADA · {workbook.title}</span><h1>{currentView.label}</h1><p>{currentView.description} Atualizada em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(workbook.loadedAt)}.</p></div>
               <div className="private-heading-actions">
+                {activeView !== 'overview' && <button type="button" className="private-button private-button-overview" onClick={() => setActiveView('overview')}><ArrowLeft size={15} /> Voltar à Visão Geral</button>}
                 <button type="button" className="private-button private-button-ghost" onClick={() => void refreshWorkbook()} disabled={busy}><RefreshCw size={15} className={busy ? 'private-spin' : ''} /> Atualizar</button>
                 <button type="button" className="private-button private-button-ghost" onClick={() => localFileInput.current?.click()} disabled={busy}><FileSpreadsheet size={15} /> Importar XLSX</button>
                 <button type="button" className="private-button private-button-ghost" onClick={exportCurrent}><Download size={15} /> Exportar visão</button>
