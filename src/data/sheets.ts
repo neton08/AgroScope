@@ -2,6 +2,7 @@ import Papa from 'papaparse'
 import type { Coordinate, Project } from './types'
 
 export const PUBLIC_SHEET_CSV_URL =
+  import.meta.env.VITE_PUBLIC_SHEET_CSV_URL?.trim() ||
   'https://docs.google.com/spreadsheets/d/1T5th-xWhvAq-2Kc8eO9JNLRskZdsWhL88fXUzd5DAx0/gviz/tq?tqx=out:csv&sheet=PAINEL_PUBLICO'
 
 const SERVICE_FIELDS = [
@@ -41,6 +42,8 @@ function numberFromCell(value: unknown): number | null {
   } else if (lastComma >= 0) {
     const after = number.length - lastComma - 1
     number = after > 2 ? number.replace(/,/g, '') : number.replace(',', '.')
+  } else if (lastDot >= 0 && number.length - lastDot - 1 === 3) {
+    number = number.replace(/\./g, '')
   } else if ((number.match(/\./g) ?? []).length > 1) {
     number = number.replace(/\./g, '')
   }

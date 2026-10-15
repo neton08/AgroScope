@@ -4,6 +4,7 @@ import FiltersBar, { type VisibilityOptions } from './components/FiltersBar'
 import StatsBar from './components/StatsBar'
 import TeamList from './components/TeamList'
 import DetailPanel from './components/DetailPanel'
+import PrivateDashboard from './components/PrivateDashboard'
 import MapView from './components/MapView'
 import { fetchProjects } from './data/sheets'
 import type { Project, RouteInfo } from './data/types'
@@ -18,7 +19,7 @@ function dateLabel(value: Date | null): string {
   return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }).format(value)
 }
 
-function Header({ lastUpdated, refreshing, onRefresh }: { lastUpdated: Date | null; refreshing: boolean; onRefresh: () => void }) {
+function Header({ lastUpdated, refreshing, onRefresh, onPrivate }: { lastUpdated: Date | null; refreshing: boolean; onRefresh: () => void; onPrivate: () => void }) {
   return (
     <header className="topbar">
       <div className="brand-lockup">
@@ -37,6 +38,10 @@ function Header({ lastUpdated, refreshing, onRefresh }: { lastUpdated: Date | nu
       </div>
       <div className="topbar-actions">
         <span className="sync-status"><span className="sync-dot" /> Consulta {dateLabel(lastUpdated)}</span>
+        <button type="button" className="refresh-button" onClick={onPrivate} title="Acesso privado para gestores" aria-label="Acesso privado para gestores">
+          <Sprout size={14} />
+          <span>Área de gestores</span>
+        </button>
         <button type="button" className="refresh-button" onClick={onRefresh} disabled={refreshing}>
           <RefreshCw size={14} className={refreshing ? 'spin' : ''} />
           <span>{refreshing ? 'Atualizando' : 'Atualizar dados'}</span>
@@ -70,6 +75,7 @@ export default function App() {
   const [baseLocality, setBaseLocality] = useState<{ employeeId: string; label: string | null; loading: boolean; error: string | null } | null>(null)
   const baseLocalityToken = useRef(0)
   const [visibility, setVisibility] = useState<VisibilityOptions>({ team: true, farms: true, routes: true, areas: false })
+  const [privatePanel, setPrivatePanel] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -258,9 +264,11 @@ export default function App() {
     setVisibility((current) => ({ ...current, areas: false }))
   }
 
+  if (privatePanel) return <PrivateDashboard onBack={() => setPrivatePanel(false)} />
+
   return (
     <div className="app-shell">
-      <Header lastUpdated={lastUpdated} refreshing={refreshing} onRefresh={refresh} />
+      <Header lastUpdated={lastUpdated} refreshing={refreshing} onRefresh={refresh} onPrivate={() => setPrivatePanel(true)} />
       <FiltersBar
         managers={managers}
         regions={regions}
