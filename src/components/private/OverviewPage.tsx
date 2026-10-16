@@ -53,6 +53,24 @@ export default function OverviewPage({ projects, onOpenProjects, onOpenTerminati
         <Kpi label="Pendências críticas" value={formatNumber(metrics.criticalCount)} note="risco contratual ou distrato" icon={<AlertTriangle size={18} />} alert={metrics.criticalCount > 0} onClick={() => onOpenProjects({ contractRange: 'critical' })} />
       </section>
 
+      <PageCard className="private-pulse-card">
+        <CardHeading eyebrow="PULSO DA OPERAÇÃO" title="Composição da carteira" badge={`${formatNumber(metrics.projects.length)} registros`} />
+        <div className="private-status-strip">
+          {statuses.map((item, index) => (
+            <button type="button" className={`private-status-tile tone-${index}`} key={item.label} onClick={() => item.label === 'Em distrato' ? onOpenTerminations() : item.filter === 'risk' ? onOpenProjects({ contractRange: 'risk' }) : item.filter ? onOpenProjects({ status: item.filter }) : onOpenProjects({ contractRange: 'risk' })}>
+              <span>{item.label}</span><strong>{formatNumber(item.count)}</strong><i aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+        <div className="private-status-list">
+          {metrics.statusCounts.map(({ status, count }) => (
+            <button type="button" className="private-status-row private-status-button" key={status} onClick={() => onOpenProjects({ status })}>
+              <span title={status}>{status}</span><div className="private-bar-track"><i style={{ width: `${metrics.projects.length ? count / metrics.projects.length * 100 : 0}%` }} /></div><strong>{formatNumber(count)}</strong>
+            </button>
+          ))}
+        </div>
+      </PageCard>
+
       <section className="private-overview-grid">
         <PageCard className="private-attention-card">
           <CardHeading eyebrow="ACOMPANHAMENTO" title="Fila de atenção" badge={formatNumber(metrics.criticalCount)} action={<span className="private-tag">AÇÃO</span>} />
@@ -79,30 +97,6 @@ export default function OverviewPage({ projects, onOpenProjects, onOpenTerminati
         </PageCard>
 
         <PageCard>
-          <CardHeading eyebrow="DESEMPENHO" title="ARR por gestor" badge="R$" />
-          {metrics.managerSummary.slice(0, 8).map((manager) => <BarRow key={manager.name} label={manager.name} value={manager.arr} max={maxManager} valueLabel={formatCurrency(manager.arr)} />)}
-          {!metrics.managerSummary.length && <EmptyState>Sem gestores identificados na planilha.</EmptyState>}
-        </PageCard>
-
-        <PageCard className="private-pulse-card">
-          <CardHeading eyebrow="PULSO DA OPERAÇÃO" title="Composição da carteira" badge={`${formatNumber(metrics.projects.length)} registros`} />
-          <div className="private-status-strip">
-            {statuses.map((item, index) => (
-              <button type="button" className={`private-status-tile tone-${index}`} key={item.label} onClick={() => item.label === 'Em distrato' ? onOpenTerminations() : item.filter === 'risk' ? onOpenProjects({ contractRange: 'risk' }) : item.filter ? onOpenProjects({ status: item.filter }) : onOpenProjects({ contractRange: 'risk' })}>
-                <span>{item.label}</span><strong>{formatNumber(item.count)}</strong><i aria-hidden="true" />
-              </button>
-            ))}
-          </div>
-          <div className="private-status-list">
-            {metrics.statusCounts.map(({ status, count }) => (
-              <button type="button" className="private-status-row private-status-button" key={status} onClick={() => onOpenProjects({ status })}>
-                <span title={status}>{status}</span><div className="private-bar-track"><i style={{ width: `${metrics.projects.length ? count / metrics.projects.length * 100 : 0}%` }} /></div><strong>{formatNumber(count)}</strong>
-              </button>
-            ))}
-          </div>
-        </PageCard>
-
-        <PageCard>
           <CardHeading eyebrow="COBERTURA" title="Indicadores de serviço" badge="%" />
           <div className="private-coverage-list">
             <button type="button" onClick={() => onOpenProjects({ focal: 'SIM' })}>
@@ -123,6 +117,12 @@ export default function OverviewPage({ projects, onOpenProjects, onOpenTerminati
             <div><span>Vencimentos em 90 dias</span><strong>{formatNumber(metrics.expiring90Count)}</strong></div>
             <div><span>Vencidos ou em distrato</span><strong>{formatNumber(metrics.overdueOrTerminationCount)}</strong></div>
           </div>
+        </PageCard>
+
+        <PageCard>
+          <CardHeading eyebrow="DESEMPENHO" title="ARR por gestor" badge="R$" />
+          {metrics.managerSummary.slice(0, 8).map((manager) => <BarRow key={manager.name} label={manager.name} value={manager.arr} max={maxManager} valueLabel={formatCurrency(manager.arr)} />)}
+          {!metrics.managerSummary.length && <EmptyState>Sem gestores identificados na planilha.</EmptyState>}
         </PageCard>
 
         <PageCard>
