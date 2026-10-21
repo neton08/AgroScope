@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Boxes, Download, Search, TowerControl, Users, Wifi } from 'lucide-react'
 import type { PrivateProject } from '../../data/privateSheets'
 import { formatNumber, projectIsValid, serviceNumber } from '../../data/privateAnalytics'
-import { CardHeading, EmptyState, FilterSelect, Kpi, PageCard, SortableTh, sortRowsBy, type SortState } from './shared'
+import { CardHeading, EmptyState, FilterSelect, Kpi, MultiSelectFilter, PageCard, SortableTh, sortRowsBy, type SortState } from './shared'
 
 const MIX = [
   { key: 'CB', label: 'CB', color: '#197a5b' },
@@ -14,14 +14,15 @@ const MIX = [
 
 export default function EquipmentPage({ projects, onExport }: { projects: PrivateProject[]; onExport: (rows: PrivateProject[]) => void }) {
   const [manager, setManager] = useState('')
-  const [collaborator, setCollaborator] = useState('')
+  const [selectedCollaborators, setSelectedCollaborators] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortState>({ key: 'cb', direction: 'desc' })
   const query = normalized(search)
+  const selectedCollaboratorSet = new Set(selectedCollaborators)
   const filtered = projects.filter((project) => {
     if (!projectIsValid(project)) return false
     if (manager && project.manager !== manager) return false
-    if (collaborator && project.collaborator !== collaborator) return false
+    if (selectedCollaboratorSet.size && !selectedCollaboratorSet.has(project.collaborator)) return false
     return !query || normalized(project.client).includes(query) || normalized(project.farm).includes(query)
   })
   const totals = Object.fromEntries(MIX.map((item) => [item.key, filtered.reduce((sum, project) => sum + serviceNumber(project, item.key), 0)])) as Record<string, number>
@@ -46,7 +47,14 @@ export default function EquipmentPage({ projects, onExport }: { projects: Privat
     return `${item.color} ${start}% ${cursor / mixTotal * 100}%`
   }).join(', ')})` : 'conic-gradient(#e8efeb 0% 100%)'
   const managers = unique(projects.map((project) => project.manager).filter((value) => value && value !== 'Não informado'))
-  const collaborators = unique(projects.map((project) => project.collaborator).filter((value) => value && value !== 'Sem colaborador informado'))
+  const collaboratorSource = manager ? projects.filter((project) => project.manager === manager) : projects
+  const collaborators = unique(collaboratorSource.map((project) => project.collaborator).filter((value) => value && value !== 'Sem colaborador informado'))
+  const collaboratorOptions = collaborators.map((value) => ({ value, label: value, meta: `${formatNumber(collaboratorSource.filter((project) => project.collaborator === value).length)} proj.` }))
+  const changeManager = (value: string) => {
+    setManager(value)
+    const available = new Set((value ? projects.filter((project) => project.manager === value) : projects).map((project) => project.collaborator))
+    setSelectedCollaborators((current) => current.filter((name) => available.has(name)))
+  }
   const sorted = useMemo(() => sortRowsBy(filtered, sort, (row, key) => {
     switch (key) {
       case 'client': return row.client
@@ -65,10 +73,10 @@ export default function EquipmentPage({ projects, onExport }: { projects: Privat
 
   return (
     <div className="private-page-stack">
-      <PageCard className="private-filterbar">
+      <PageCard className="private-filterbar private-equipment-filterbar">
         <label className="private-search"><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar cliente ou fazenda" /></label>
-        <FilterSelect label="Gestor" value={manager} options={managers.map((value) => ({ value, label: value }))} onChange={setManager} />
-        <FilterSelect label="Colaborador" value={collaborator} options={collaborators.map((value) => ({ value, label: value }))} onChange={setCollaborator} />
+        <FilterSelect label="Gestor" value={manager} options={managers.map((value) => ({ value, label: value }))} onChange={changeManager} />
+        <MultiSelectFilter label="Colaboradores" emptyLabel="Selecionar vários" value={selectedCollaborators} options={collaboratorOptions} onChange={setSelectedCollaborators} />
       </PageCard>
       <section className="private-kpis private-kpis-six">
         <Kpi label="CBs" value={formatNumber(totals.CB)} note="unidades monitoradas" icon={<TowerControl size={18} />} />

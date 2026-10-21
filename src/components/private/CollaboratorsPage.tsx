@@ -1,10 +1,8 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, Search, Trophy, Users } from 'lucide-react'
+import { Search, Trophy, Users } from 'lucide-react'
 import type { PrivateProject } from '../../data/privateSheets'
 import { formatCurrency, formatNumber, normalized, summarizeCollaborators } from '../../data/privateAnalytics'
-import { CardHeading, EmptyState, FilterSelect, Kpi, PageCard, SortableTh, sortRowsBy, type SortState } from './shared'
-
-type CollaboratorOption = { name: string; projects: number }
+import { CardHeading, EmptyState, FilterSelect, Kpi, MultiSelectFilter, PageCard, SortableTh, sortRowsBy, type SortState } from './shared'
 
 export default function CollaboratorsPage({ projects, onExport }: { projects: PrivateProject[]; onExport: (rows: PrivateProject[]) => void }) {
   const [search, setSearch] = useState('')
@@ -14,7 +12,7 @@ export default function CollaboratorsPage({ projects, onExport }: { projects: Pr
   const managers = unique(projects.map((project) => project.manager).filter((value) => value && value !== 'Não informado'))
   const filteredProjects = useMemo(() => projects.filter((project) => !manager || project.manager === manager), [projects, manager])
   const allRows = useMemo(() => summarizeCollaborators(filteredProjects), [filteredProjects])
-  const collaboratorOptions = useMemo(() => allRows.map((person) => ({ name: person.name, projects: person.projects })).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')), [allRows])
+  const collaboratorOptions = useMemo(() => allRows.map((person) => ({ value: person.name, label: person.name, meta: `${formatNumber(person.projects)} proj.` })).sort((a, b) => a.label.localeCompare(b.label, 'pt-BR')), [allRows])
   const selectedSet = useMemo(() => new Set(selectedCollaborators), [selectedCollaborators])
   const query = normalized(search)
   const rows = useMemo(() => allRows.filter((person) => {
@@ -63,7 +61,7 @@ export default function CollaboratorsPage({ projects, onExport }: { projects: Pr
       <PageCard className="private-filterbar private-collaborators-filterbar">
         <label className="private-search"><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar colaborador" /></label>
         <FilterSelect label="Gestor" value={manager} options={managers.map((value) => ({ value, label: value }))} onChange={changeManager} />
-        <CollaboratorMultiSelect options={collaboratorOptions} value={selectedCollaborators} onChange={setSelectedCollaborators} />
+        <MultiSelectFilter label="Colaboradores" emptyLabel="Selecionar vários" options={collaboratorOptions} value={selectedCollaborators} onChange={setSelectedCollaborators} />
       </PageCard>
 
       <section className="private-kpis private-kpis-five">
@@ -107,38 +105,6 @@ export default function CollaboratorsPage({ projects, onExport }: { projects: Pr
         </table></div>
       </PageCard>
     </div>
-  )
-}
-
-function CollaboratorMultiSelect({ options, value, onChange }: { options: CollaboratorOption[]; value: string[]; onChange: (names: string[]) => void }) {
-  const [search, setSearch] = useState('')
-  const query = normalized(search)
-  const visibleOptions = options.filter((option) => !query || normalized(option.name).includes(query))
-  const selected = new Set(value)
-  const allVisibleSelected = visibleOptions.length > 0 && visibleOptions.every((option) => selected.has(option.name))
-
-  const toggle = (name: string) => onChange(selected.has(name) ? value.filter((item) => item !== name) : [...value, name])
-  const toggleVisible = () => {
-    if (allVisibleSelected) {
-      const visibleNames = new Set(visibleOptions.map((option) => option.name))
-      onChange(value.filter((name) => !visibleNames.has(name)))
-    } else {
-      onChange([...new Set([...value, ...visibleOptions.map((option) => option.name)])])
-    }
-  }
-
-  return (
-    <details className="private-multi-select">
-      <summary aria-label="Selecionar vários colaboradores"><span className="private-multi-select-label">Colaboradores</span><span className="private-multi-select-value">{value.length ? `${value.length} selecionado${value.length === 1 ? '' : 's'}` : 'Selecionar vários'}</span><ChevronDown size={15} aria-hidden="true" /></summary>
-      <div className="private-multi-select-panel">
-        <label className="private-search"><Search size={15} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Filtrar nomes" /></label>
-        <div className="private-multi-select-actions"><button type="button" onClick={toggleVisible} disabled={!visibleOptions.length}>{allVisibleSelected ? 'Desmarcar visíveis' : 'Selecionar visíveis'}</button><button type="button" onClick={() => onChange([])} disabled={!value.length}>Limpar seleção</button></div>
-        <div className="private-multi-select-options" role="group" aria-label="Colaboradores disponíveis">
-          {visibleOptions.map((option) => <label className="private-multi-select-option" key={option.name}><input type="checkbox" checked={selected.has(option.name)} onChange={() => toggle(option.name)} /><span>{option.name}</span><small>{formatNumber(option.projects)} proj.</small></label>)}
-          {!visibleOptions.length && <EmptyState>Nenhum nome corresponde à busca.</EmptyState>}
-        </div>
-      </div>
-    </details>
   )
 }
 

@@ -1,6 +1,7 @@
 export interface GoogleSession {
   accessToken: string
   email: string
+  expiresAt: number
 }
 
 export interface PickedSpreadsheet {
@@ -10,6 +11,7 @@ export interface PickedSpreadsheet {
 
 interface TokenResponse {
   access_token?: string
+  expires_in?: string | number
   error?: string
   error_description?: string
 }
@@ -55,6 +57,45 @@ const GOOGLE_SCOPE = 'openid email https://www.googleapis.com/auth/drive.file'
 
 let identityScript: Promise<void> | null = null
 let pickerScript: Promise<void> | null = null
+const GOOGLE_SESSION_KEY = 'agroscope.google.session.v1'
+const PICKED_SHEET_KEY = 'agroscope.google.picked-sheet.v1'
+
+function readSessionStorage(key: string): string | null {
+  try { return typeof window === 'undefined' ? null : window.sessionStorage.getItem(key) } catch { return null }
+}
+
+function writeSessionStorage(key: string, value: string): void {
+  try { if (typeof window !== 'undefined') window.sessionStorage.setItem(key, value) } catch { /* A sessão ainda funciona em memória se o navegador bloquear storage. */ }
+}
+
+function removeSessionStorage(key: string): void {
+  try { if (typeof window !== 'undefined') window.sessionStorage.removeItem(key) } catch { /* O navegador pode bloquear storage em modo restrito. */ }
+}
+
+function persistGoogleSession(session: GoogleSession): void {
+  writeSessionStorage(GOOGLE_SESSION_KEY, JSON.stringify(session))
+}
+
+export function clearGoogleSession(): void {
+  removeSessionStorage(GOOGLE_SESSION_KEY)
+}
+
+export function storePickedSpreadsheet(file: PickedSpreadsheet): void {
+  writeSessionStorage(PICKED_SHEET_KEY, JSON.stringify(file))
+}
+
+export function getStoredPickedSpreadsheet(): PickedSpreadsheet | null {
+  try {
+    const stored = readSessionStorage(PICKED_SHEET_KEY)
+    if (!stored) return null
+    const value = JSON.parse(stored) as Partial<PickedSpreadsheet>
+    return typeof value.id === 'string' && value.id && typeof value.name === 'string' ? { id: value.id, name: value.name } : null
+  } catch { return null }
+}
+
+export function clearPickedSpreadsheet(): void {
+  removeSessionStorage(PICKED_SHEET_KEY)
+}
 
 export function googleConfiguration(): { clientId: string; pickerKey: string; projectNumber: string } {
   return {
@@ -100,7 +141,7 @@ function loadScript(src: string, id: string): Promise<void> {
   })
 }
 
-export async function signInWithGoogle(): Promise<GoogleSession> {
+async function requestGoogleToken(prompt: string): Promise<TokenResponse> {
   if (!GOOGLE_CLIENT_ID) throw new Error('O Google Sign-In ainda não está configurado para este site.')
   identityScript ??= loadScript('https://accounts.google.com/gsi/client', 'google-identity-services')
   await identityScript
@@ -109,27 +150,103 @@ export async function signInWithGoogle(): Promise<GoogleSession> {
   if (!tokenClient) throw new Error('O serviço de autenticação Google não ficou disponível.')
 
   const response = await new Promise<TokenResponse>((resolve, reject) => {
-    const client = tokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: GOOGLE_SCOPE,
-      callback: resolve,
-      error_callback: (error) => reject(new Error(error.message || 'A autorização Google foi interrompida.')),
-    })
-    client.requestAccessToken({ prompt: 'select_account' })
+    let settled = false
+    let timeout = 0
+    const finish = (callback: () => void) => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timeout)
+      callback()
+    }
+    timeout = window.setTimeout(() => finish(() => reject(new Error('A autorização Google demorou demais para responder.'))), 12000)
+    try {
+      const client = tokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: GOOGLE_SCOPE,
+        callback: (token) => finish(() => resolve(token)),
+        error_callback: (error) => finish(() => reject(new Error(error.message || 'A autorização Google foi interrompida.'))),
+      })
+      client.requestAccessToken({ prompt })
+    } catch (error) {
+      finish(() => reject(error instanceof Error ? error : new Error('Não foi possível iniciar a autorização Google.')))
+    }
   })
 
   if (response.error || !response.access_token) {
     throw new Error(response.error_description || 'O Google não concedeu acesso a esta sessão.')
   }
+  return response
+}
 
+class GoogleProfileError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message)
+    this.name = 'GoogleProfileError'
+  }
+}
+
+async function getGoogleEmail(accessToken: string): Promise<string> {
   const profileResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: { Authorization: `Bearer ${response.access_token}` },
+    headers: { Authorization: `Bearer ${accessToken}` },
     cache: 'no-store',
   })
-  if (!profileResponse.ok) throw new Error('Não foi possível confirmar a conta Google desta sessão.')
+  if (!profileResponse.ok) throw new GoogleProfileError('Não foi possível confirmar a conta Google desta sessão.', profileResponse.status)
   const profile = await profileResponse.json() as GoogleProfile
+  return profile.email || 'Conta Google'
+}
 
-  return { accessToken: response.access_token, email: profile.email || 'Conta Google' }
+function createSession(response: TokenResponse, email: string): GoogleSession {
+  const seconds = Number(response.expires_in)
+  const duration = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 3600_000
+  return { accessToken: response.access_token!, email, expiresAt: Date.now() + duration }
+}
+
+export async function signInWithGoogle(): Promise<GoogleSession> {
+  const response = await requestGoogleToken('select_account')
+  const session = createSession(response, await getGoogleEmail(response.access_token!))
+  persistGoogleSession(session)
+  return session
+}
+
+export async function restoreGoogleSession(): Promise<GoogleSession | null> {
+  let saved: GoogleSession | null = null
+  try {
+    const raw = readSessionStorage(GOOGLE_SESSION_KEY)
+    if (raw) {
+      const value = JSON.parse(raw) as Partial<GoogleSession>
+      if (typeof value.accessToken === 'string' && value.accessToken && typeof value.email === 'string' && typeof value.expiresAt === 'number' && Number.isFinite(value.expiresAt)) {
+        saved = { accessToken: value.accessToken, email: value.email, expiresAt: value.expiresAt }
+      }
+    }
+  } catch { saved = null }
+  if (!saved) {
+    clearGoogleSession()
+    clearPickedSpreadsheet()
+    return null
+  }
+  let tokenKnownInvalid = false
+  if (saved.expiresAt > Date.now() + 120_000) {
+    try {
+      const verified = { ...saved, email: await getGoogleEmail(saved.accessToken) }
+      persistGoogleSession(verified)
+      return verified
+    } catch (error) {
+      if (!(error instanceof GoogleProfileError) || error.status !== 401) return saved
+      tokenKnownInvalid = true
+    }
+  }
+
+  try {
+    const response = await requestGoogleToken('')
+    const renewed = createSession(response, await getGoogleEmail(response.access_token!))
+    persistGoogleSession(renewed)
+    return renewed
+  } catch {
+    if (!tokenKnownInvalid && saved.expiresAt > Date.now()) return saved
+    clearGoogleSession()
+    clearPickedSpreadsheet()
+    return null
+  }
 }
 
 export async function chooseSpreadsheet(accessToken: string): Promise<PickedSpreadsheet | null> {

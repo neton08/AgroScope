@@ -2,6 +2,8 @@ import type { PrivateProject } from './privateSheets'
 
 export type ProjectFilters = {
   search: string
+  clients: string[]
+  units: string[]
   manager: string
   region: string
   status: string
@@ -15,6 +17,8 @@ export type ProjectFilters = {
 
 export const EMPTY_PROJECT_FILTERS: ProjectFilters = {
   search: '',
+  clients: [],
+  units: [],
   manager: '',
   region: '',
   status: '',
@@ -145,6 +149,8 @@ export function filterProjects(projects: PrivateProject[], filters: ProjectFilte
   return projects.filter((project) => {
     if (!projectIsValid(project)) return false
     if (search && ![project.manager, project.region, project.collaborator, project.client, project.farm, project.city, project.status].some((value) => normalized(value).includes(search))) return false
+    if (filters.clients.length && !filters.clients.includes(project.client)) return false
+    if (filters.units.length && !filters.units.includes(project.farm)) return false
     if (filters.manager && project.manager !== filters.manager) return false
     if (filters.region && project.region !== filters.region) return false
     if (filters.status && normalized(project.status) !== normalized(filters.status)) return false

@@ -3,7 +3,7 @@ import { Download, RotateCcw, Search } from 'lucide-react'
 import type { PrivateProject } from '../../data/privateSheets'
 import { daysRemaining, filterProjects, formatCurrency, formatDate, formatNumber, remainingContractValue, remainingTimeLabel, serviceCharge, serviceNumber, yesNo } from '../../data/privateAnalytics'
 import type { ProjectFilters } from '../../data/privateAnalytics'
-import { CardHeading, EmptyState, FilterSelect, Kpi, PageCard, SortableTh, sortRowsBy, StatusPill, type SortState } from './shared'
+import { CardHeading, EmptyState, FilterSelect, Kpi, MultiSelectFilter, PageCard, SortableTh, sortRowsBy, StatusPill, type SortState } from './shared'
 
 export default function ProjectsPage({ projects, filters, onFiltersChange, onClear, onExport }: {
   projects: PrivateProject[]
@@ -21,6 +21,8 @@ export default function ProjectsPage({ projects, filters, onFiltersChange, onCle
   const managers = unique(projects.map((project) => project.manager).filter((value) => value && value !== 'Não informado'))
   const regions = unique(projects.map((project) => project.region).filter((value) => value && value !== 'Não informada'))
   const statuses = unique(projects.map((project) => project.status).filter((value) => value && value !== 'Não informado'))
+  const clients = multiOptions(projects, 'client')
+  const units = multiOptions(projects, 'farm')
 
   useEffect(() => {
     const update = () => setTableWidth(table.current?.scrollWidth ?? 0)
@@ -62,7 +64,7 @@ export default function ProjectsPage({ projects, filters, onFiltersChange, onCle
   const chargeKnown = charged.length + uncharged.length
   const chargeArr = charged.reduce((sum, project) => sum + (project.arr ?? 0), 0)
   const noChargeArr = uncharged.reduce((sum, project) => sum + (project.arr ?? 0), 0)
-  const update = (key: keyof ProjectFilters, value: string) => onFiltersChange({ ...filters, [key]: value })
+  const update = <K extends keyof ProjectFilters,>(key: K, value: ProjectFilters[K]) => onFiltersChange({ ...filters, [key]: value })
   const syncScroll = (source: 'top' | 'table') => {
     const from = source === 'top' ? topScroll.current : tableScroll.current
     const to = source === 'top' ? tableScroll.current : topScroll.current
@@ -74,6 +76,8 @@ export default function ProjectsPage({ projects, filters, onFiltersChange, onCle
       <PageCard className="private-project-filters">
         <div className="private-project-filter-grid">
           <label className="private-search"><Search size={16} /><input value={filters.search} onChange={(event) => update('search', event.target.value)} placeholder="Buscar cliente ou fazenda" /></label>
+          <MultiSelectFilter label="Clientes" value={filters.clients} options={clients} onChange={(value) => update('clients', value)} />
+          <MultiSelectFilter label="Unidades / fazendas" value={filters.units} options={units} onChange={(value) => update('units', value)} />
           <FilterSelect label="Gestor" value={filters.manager} options={managers.map((value) => ({ value, label: value }))} onChange={(value) => update('manager', value)} />
           <FilterSelect label="Regional" value={filters.region} options={regions.map((value) => ({ value, label: value }))} onChange={(value) => update('region', value)} />
           <FilterSelect label="Status" value={filters.status} options={statuses.map((value) => ({ value, label: value }))} onChange={(value) => update('status', value)} />
@@ -126,4 +130,14 @@ export default function ProjectsPage({ projects, filters, onFiltersChange, onCle
 
 function unique(values: string[]): string[] {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+}
+
+function multiOptions(projects: PrivateProject[], key: 'client' | 'farm') {
+  const counts = new Map<string, number>()
+  for (const project of projects) {
+    const value = project[key]?.trim()
+    if (!value || ['-', 'Não informado', 'Não informada', 'Fazenda/unidade não informada'].includes(value)) continue
+    counts.set(value, (counts.get(value) ?? 0) + 1)
+  }
+  return [...counts].sort(([a], [b]) => a.localeCompare(b, 'pt-BR')).map(([value, count]) => ({ value, label: value, meta: `${formatNumber(count)} proj.` }))
 }

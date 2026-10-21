@@ -14,6 +14,11 @@ import { formatNumber, normalizeKey } from './lib/format'
 const PrivateDashboard = lazy(() => import('./components/PrivateDashboard'))
 
 const PUBLIC_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1T5th-xWhvAq-2Kc8eO9JNLRskZdsWhL88fXUzd5DAx0/edit'
+const PRIVATE_PANEL_KEY = 'agroscope.private-panel-open.v1'
+
+function restorePrivatePanelOpen(): boolean {
+  try { return window.sessionStorage.getItem(PRIVATE_PANEL_KEY) === 'true' } catch { return false }
+}
 
 function dateLabel(value: Date | null): string {
   if (!value) return 'aguardando dados'
@@ -76,12 +81,18 @@ export default function App() {
   const [baseLocality, setBaseLocality] = useState<{ employeeId: string; label: string | null; loading: boolean; error: string | null } | null>(null)
   const baseLocalityToken = useRef(0)
   const [visibility, setVisibility] = useState<VisibilityOptions>({ team: true, farms: true, routes: true, areas: false })
-  const [privatePanel, setPrivatePanel] = useState(false)
-  const [privatePanelMounted, setPrivatePanelMounted] = useState(false)
+  const [privatePanel, setPrivatePanel] = useState(restorePrivatePanelOpen)
+  const [privatePanelMounted, setPrivatePanelMounted] = useState(restorePrivatePanelOpen)
 
   const openPrivatePanel = () => {
+    try { window.sessionStorage.setItem(PRIVATE_PANEL_KEY, 'true') } catch { /* Mantém navegação funcional se o navegador bloquear sessionStorage. */ }
     setPrivatePanelMounted(true)
     setPrivatePanel(true)
+  }
+
+  const closePrivatePanel = () => {
+    try { window.sessionStorage.removeItem(PRIVATE_PANEL_KEY) } catch { /* A navegação para o mapa continua disponível. */ }
+    setPrivatePanel(false)
   }
 
   useEffect(() => {
@@ -354,7 +365,7 @@ export default function App() {
       {privatePanelMounted && (
         <div hidden={!privatePanel}>
           <Suspense fallback={<div role="status" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', color: '#244c43' }}>Carregando área de gestores…</div>}>
-            <PrivateDashboard onBack={() => setPrivatePanel(false)} />
+            <PrivateDashboard onBack={closePrivatePanel} />
           </Suspense>
         </div>
       )}

@@ -268,6 +268,7 @@ button.private-kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 22px r
 .private-project-filter-grid { display: grid; grid-template-columns: minmax(210px, 1.6fr) repeat(3, minmax(140px, 1fr)); gap: 10px; align-items: end; }
 .private-project-filter-grid .private-search { min-height: 39px; }
 .private-project-filter-grid .private-filter-field { min-width: 0; }
+.private-project-filter-grid > .private-multi-select { width: 100%; min-width: 0; max-width: none; }
 .private-filter-field { min-width: 150px; display: flex; flex-direction: column; gap: 5px; color: #657a72; font-size: 11px; font-weight: 800; }
 .private-filter-field select { width: 100%; min-height: 39px; padding: 8px 10px; color: #243f40; border: 1px solid #d7e2dc; border-radius: 7px; background: #fbfdfb; font: inherit; font-size: 12px; }
 .private-project-filter-grid > .private-button { min-height: 39px; }
@@ -432,6 +433,9 @@ button.private-kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 22px r
 .private-multi-select-actions button { padding: 5px 2px; color: #176c50; border: 0; background: transparent; font-size: 11px; font-weight: 800; cursor: pointer; }
 .private-multi-select-actions button:disabled { color: #9aa9a1; cursor: not-allowed; }
 .private-multi-select-options { max-height: 260px; overflow: auto; border-top: 1px solid #edf1ee; }
+.private-multi-select-panel-footer { display: flex; justify-content: flex-end; margin-top: 8px; padding-top: 9px; border-top: 1px solid #edf1ee; }
+.private-multi-select-panel-footer button { min-height: 32px; padding: 6px 12px; color: #fff; border: 0; border-radius: 6px; background: #197a5b; font-size: 12px; font-weight: 800; cursor: pointer; }
+.private-multi-select-panel-footer button:hover { background: #116b4e; }
 .private-multi-select-option { min-height: 36px; display: flex; align-items: center; gap: 8px; padding: 6px 3px; color: #344d48; border-bottom: 1px solid #f0f3f0; font-size: 12px; cursor: pointer; }
 .private-multi-select-option:hover { background: #f6faf7; }
 .private-multi-select-option input { width: 15px; height: 15px; flex: 0 0 auto; accent-color: #197a5b; }
@@ -450,12 +454,17 @@ button.private-kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 22px r
 .private-collaborator-project-cell { min-width: 250px; max-width: 370px; }
 .private-collaborator-project-list.is-compact { max-height: 150px; }
 .private-collaborator-table { min-width: 1480px; }
+.private-equipment-filterbar { align-items: flex-end; flex-wrap: wrap; }
+.private-equipment-filterbar > .private-search { flex: 1 1 250px; }
+.private-equipment-filterbar > .private-filter-field { flex: 0 1 205px; }
+.private-equipment-filterbar > .private-multi-select { flex: 0 1 270px; }
 .private-shell.is-dark .private-multi-select > summary { color: #e3ece6; border-color: #3a4c52; background: #111c24; }
 .private-shell.is-dark .private-multi-select-label, .private-shell.is-dark .private-multi-select-value { color: #d4e0d7; }
 .private-shell.is-dark .private-multi-select-panel { border-color: #3a4c52; background: #17232c; box-shadow: 0 12px 34px rgba(0,0,0,.35); }
 .private-shell.is-dark .private-multi-select-option { color: #d4e0d7; border-color: #2b3b43; }
 .private-shell.is-dark .private-multi-select-option:hover { background: #1d2b33; }
 .private-shell.is-dark .private-multi-select-option > small { color: #9eafa5; }
+.private-shell.is-dark .private-multi-select-panel-footer { border-color: #2b3b43; }
 .private-shell.is-dark .private-collaborator-project-card { border-color: #304148; background: #1d2b33; }
 .private-shell.is-dark .private-collaborator-project-heading h3, .private-shell.is-dark .private-collaborator-project-list > li > strong { color: #dce9e0; }
 .private-shell.is-dark .private-collaborator-project-list > li > small { color: #9eafa5; }
@@ -464,6 +473,7 @@ button.private-kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 22px r
 }
 @media (max-width: 820px) {
   .private-collaborators-filterbar > .private-search, .private-collaborators-filterbar > .private-filter-field, .private-collaborators-filterbar > .private-multi-select { width: 100%; min-width: 0; flex-basis: 100%; }
+  .private-equipment-filterbar > .private-search, .private-equipment-filterbar > .private-filter-field, .private-equipment-filterbar > .private-multi-select { width: 100%; min-width: 0; flex-basis: 100%; }
   .private-multi-select-panel { right: auto; left: 0; width: min(100%, 420px); }
 }
 @media (max-width: 520px) {

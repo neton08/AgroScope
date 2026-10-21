@@ -1,7 +1,7 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, ReactNode } from 'react'
 import { AlertCircle, ArrowLeft, BarChart3, Boxes, BriefcaseBusiness, CalendarClock, Download, FileSpreadsheet, LogOut, Moon, RefreshCw, Search, ShieldCheck, Sun, Trash2, Users } from 'lucide-react'
-import { chooseSpreadsheet, GoogleApiError, missingGoogleConfiguration, signInWithGoogle } from '../lib/googleDrive'
+import { chooseSpreadsheet, clearGoogleSession, clearPickedSpreadsheet, getStoredPickedSpreadsheet, GoogleApiError, missingGoogleConfiguration, restoreGoogleSession, signInWithGoogle, storePickedSpreadsheet } from '../lib/googleDrive'
 import type { GoogleSession, PickedSpreadsheet } from '../lib/googleDrive'
 import { loadPrivateWorkbook, parsePrivateProjectsFromRows } from '../data/privateSheets'
 import type { PrivateContact, PrivateProject, PrivateWorkbook } from '../data/privateSheets'
@@ -68,10 +68,12 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
   const [projectFilters, setProjectFilters] = useState<ProjectFilters>({ ...EMPTY_PROJECT_FILTERS })
   const [contactSearch, setContactSearch] = useState('')
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState(true)
   const [error, setError] = useState('')
   const localFileInput = useRef<HTMLInputElement>(null)
   const privateShellRef = useRef<HTMLDivElement>(null)
+  const restoreSessionPromise = useRef<Promise<{ session: GoogleSession; file: PickedSpreadsheet | null } | null> | null>(null)
+  const operationIdRef = useRef(0)
   const missingConfig = missingGoogleConfiguration()
   const projects = localProjects ?? workbook?.projects ?? []
   const filteredProjects = useMemo(() => filterProjects(projects, projectFilters), [projects, projectFilters])
@@ -87,19 +89,25 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
   }, [activeView])
 
   const loadSelected = async (file: PickedSpreadsheet, accessToken: string) => {
+    const operationId = ++operationIdRef.current
     setBusy(true)
     setError('')
     try {
       const result = await loadPrivateWorkbook(accessToken, file.id)
+      if (operationId !== operationIdRef.current) return
       setPickedFile(file)
+      storePickedSpreadsheet(file)
       setWorkbook(result)
       setLocalProjects(null)
       setLocalFileName('')
       setProjectFilters({ ...EMPTY_PROJECT_FILTERS })
       setActiveView('overview')
     } catch (loadError) {
+      if (operationId !== operationIdRef.current) return
       setWorkbook(null)
       if (loadError instanceof GoogleApiError && loadError.status === 401) {
+        clearGoogleSession()
+        clearPickedSpreadsheet()
         setSession(null)
         setPickedFile(null)
         setError('A sessão Google expirou. Entre novamente para continuar.')
@@ -109,32 +117,66 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
         setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar a planilha privada.')
       }
     } finally {
-      setBusy(false)
+      if (operationId === operationIdRef.current) setBusy(false)
     }
   }
 
+  useEffect(() => {
+    let active = true
+    const startingOperationId = operationIdRef.current
+    const restoration = restoreSessionPromise.current ??= restoreGoogleSession().then((restored) => restored ? { session: restored, file: getStoredPickedSpreadsheet() } : null)
+    void restoration.then(async (restored) => {
+      if (!active || startingOperationId !== operationIdRef.current || !restored) return
+      setSession(restored.session)
+      if (restored.file) {
+        setPickedFile(restored.file)
+        await loadSelected(restored.file, restored.session.accessToken)
+      }
+    }).catch((restoreError: unknown) => {
+      if (active && startingOperationId === operationIdRef.current) setError(restoreError instanceof Error ? restoreError.message : 'Não foi possível restaurar a sessão Google desta aba.')
+    }).finally(() => {
+      if (active && startingOperationId === operationIdRef.current) setBusy(false)
+    })
+    return () => { active = false }
+  }, [])
+
   const signIn = async () => {
+    const operationId = ++operationIdRef.current
+    clearGoogleSession()
+    clearPickedSpreadsheet()
+    setSession(null)
+    setPickedFile(null)
+    setWorkbook(null)
+    setLocalProjects(null)
+    setLocalFileName('')
     setBusy(true)
     setError('')
     try {
       const result = await signInWithGoogle()
+      if (operationId !== operationIdRef.current) return
       setSession(result)
     } catch (authError) {
-      setError(authError instanceof Error ? authError.message : 'Não foi possível entrar com Google.')
+      if (operationId === operationIdRef.current) setError(authError instanceof Error ? authError.message : 'Não foi possível entrar com Google.')
     } finally {
-      setBusy(false)
+      if (operationId === operationIdRef.current) setBusy(false)
     }
   }
 
   const selectFile = async () => {
     if (!session) return
+    const operationId = ++operationIdRef.current
+    const accessToken = session.accessToken
     setBusy(true)
     setError('')
     try {
-      const file = await chooseSpreadsheet(session.accessToken)
-      if (file) await loadSelected(file, session.accessToken)
+      const file = await chooseSpreadsheet(accessToken)
+      if (operationId !== operationIdRef.current) return
+      if (file) await loadSelected(file, accessToken)
     } catch (pickerError) {
+      if (operationId !== operationIdRef.current) return
       if (pickerError instanceof GoogleApiError && pickerError.status === 401) {
+        clearGoogleSession()
+        clearPickedSpreadsheet()
         setSession(null)
         setPickedFile(null)
         setWorkbook(null)
@@ -144,7 +186,7 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
         setError(pickerError instanceof Error ? pickerError.message : 'Não foi possível abrir o seletor Google Drive.')
       }
     } finally {
-      setBusy(false)
+      if (operationId === operationIdRef.current) setBusy(false)
     }
   }
 
@@ -156,6 +198,9 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
   }
 
   const signOut = () => {
+    operationIdRef.current += 1
+    clearGoogleSession()
+    clearPickedSpreadsheet()
     setSession(null)
     setPickedFile(null)
     setWorkbook(null)
@@ -164,11 +209,14 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
     setProjectFilters({ ...EMPTY_PROJECT_FILTERS })
     setContactSearch('')
     setActiveView('overview')
+    setBusy(false)
     setError('')
   }
 
   const clearSessionData = () => {
     if (!window.confirm('Limpar os dados carregados desta sessão? A planilha Google não será alterada.')) return
+    operationIdRef.current += 1
+    clearPickedSpreadsheet()
     setWorkbook(null)
     setPickedFile(null)
     setLocalProjects(null)
@@ -176,12 +224,14 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
     setProjectFilters({ ...EMPTY_PROJECT_FILTERS })
     setContactSearch('')
     setActiveView('overview')
+    setBusy(false)
     setError('')
   }
 
   const importLocalWorkbook = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
+    const operationId = ++operationIdRef.current
     setError('')
     setBusy(true)
     try {
@@ -194,14 +244,15 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
       const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' }) as unknown[][]
       const parsed = parsePrivateProjectsFromRows(matrix)
       if (!parsed.length) throw new Error('Não encontrei linhas operacionais reconhecíveis na aba Projetos.')
+      if (operationId !== operationIdRef.current) return
       setLocalProjects(parsed)
       setLocalFileName(file.name)
       setProjectFilters({ ...EMPTY_PROJECT_FILTERS })
       setActiveView('overview')
     } catch (importError) {
-      setError(importError instanceof Error ? importError.message : 'Não foi possível ler o arquivo XLSX.')
+      if (operationId === operationIdRef.current) setError(importError instanceof Error ? importError.message : 'Não foi possível ler o arquivo XLSX.')
     } finally {
-      setBusy(false)
+      if (operationId === operationIdRef.current) setBusy(false)
       event.target.value = ''
     }
   }
@@ -234,6 +285,8 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
     }
     const filterSummary = [
       { Filtro: 'Busca', Valor: projectFilters.search || 'Todos' },
+      { Filtro: 'Clientes', Valor: projectFilters.clients.join(', ') || 'Todos' },
+      { Filtro: 'Unidades / fazendas', Valor: projectFilters.units.join(', ') || 'Todas' },
       { Filtro: 'Gestor', Valor: projectFilters.manager || 'Todos' },
       { Filtro: 'Regional', Valor: projectFilters.region || 'Todos' },
       { Filtro: 'Status', Valor: projectFilters.status || 'Todos' },
@@ -297,11 +350,11 @@ export default function PrivateDashboard({ onBack }: { onBack: () => void }) {
             <div className="private-auth-icon"><ShieldCheck size={26} /></div>
             <span className="private-eyebrow">ACESSO RESTRITO A GESTORES</span>
             <h1>Dados completos, com acesso pela sua conta Google.</h1>
-            <p>Entre com uma conta que tenha permissão na planilha AgroScope. O navegador só consulta arquivos que você selecionar no Google Drive; tokens e registros não são salvos neste site.</p>
+            <p>Entre com uma conta que tenha permissão na planilha AgroScope. O token de acesso fica limitado à sessão desta aba para restaurar o login após atualizar; os registros da planilha permanecem somente em memória.</p>
             {error && <div className="private-alert" role="alert"><AlertCircle size={17} />{error}</div>}
             {missingConfig.length > 0 && <div className="private-setup-note"><strong>Configuração Google pendente</strong><p>Antes do login funcionar, configure no build do Pages:</p><code>{missingConfig.join(' · ')}</code><p>As instruções estão no README do repositório. Não coloque o segredo de cliente OAuth no código; o Client ID e a chave do Picker são identificadores públicos e devem ter origens/APIs restritas.</p></div>}
-            <button type="button" className="private-button private-button-primary private-login-button" onClick={() => void signIn()} disabled={busy || missingConfig.length > 0}>{busy ? <RefreshCw size={16} className="private-spin" /> : <ShieldCheck size={16} />}{busy ? 'Conectando…' : 'Acessar com Google'}</button>
-            <div className="private-security-note"><ShieldCheck size={15} /> Login Google · acesso concedido pelo Drive · dados mantidos só na memória da sessão</div>
+            <button type="button" className="private-button private-button-primary private-login-button" onClick={() => void signIn()} disabled={busy || missingConfig.length > 0}>{busy ? <RefreshCw size={16} className="private-spin" /> : <ShieldCheck size={16} />}{busy ? 'Verificando sessão…' : 'Acessar com Google'}</button>
+            <div className="private-security-note"><ShieldCheck size={15} /> Sessão restrita a esta aba · token expira automaticamente · dados da planilha mantidos só em memória</div>
             <a className="private-privacy-link" href={`${import.meta.env.BASE_URL}privacy.html`}>Política de privacidade</a>
           </section>
         </main>

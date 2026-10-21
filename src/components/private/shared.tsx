@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { ChevronDown, Search } from 'lucide-react'
 import { formatCurrency, formatNumber } from '../../data/privateAnalytics'
 
 export type SortState = { key: string; direction: 'asc' | 'desc' }
@@ -76,6 +78,66 @@ export function FilterSelect({ label, value, options, onChange }: { label: strin
     <label className="private-filter-field"><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value)}>
       <option value="">Todos</option>{options.map((option) => <option value={option.value} key={option.value}>{option.label}</option>)}
     </select></label>
+  )
+}
+
+export type MultiSelectOption = { value: string; label: string; meta?: string }
+
+export function MultiSelectFilter({ label, value, options, onChange, emptyLabel = 'Todos' }: {
+  label: string
+  value: string[]
+  options: MultiSelectOption[]
+  onChange: (values: string[]) => void
+  emptyLabel?: string
+}) {
+  const rootRef = useRef<HTMLDetailsElement>(null)
+  const [search, setSearch] = useState('')
+  const selected = new Set(value)
+  const query = search.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+  const visibleOptions = options.filter((option) => !query || option.label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(query))
+  const allVisibleSelected = visibleOptions.length > 0 && visibleOptions.every((option) => selected.has(option.value))
+
+  useEffect(() => {
+    const closeOnOutside = (event: PointerEvent) => {
+      if (rootRef.current?.open && !rootRef.current.contains(event.target as Node)) rootRef.current.open = false
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && rootRef.current?.open) {
+        rootRef.current.open = false
+        rootRef.current.querySelector('summary')?.focus()
+      }
+    }
+    document.addEventListener('pointerdown', closeOnOutside)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutside)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [])
+
+  const toggle = (optionValue: string) => onChange(selected.has(optionValue) ? value.filter((item) => item !== optionValue) : [...value, optionValue])
+  const toggleVisible = () => {
+    if (allVisibleSelected) {
+      const visible = new Set(visibleOptions.map((option) => option.value))
+      onChange(value.filter((item) => !visible.has(item)))
+    } else {
+      onChange([...new Set([...value, ...visibleOptions.map((option) => option.value)])])
+    }
+  }
+
+  return (
+    <details className="private-multi-select" ref={rootRef}>
+      <summary aria-label={`${label}: ${value.length ? `${value.length} selecionados` : emptyLabel}`}><span className="private-multi-select-label">{label}</span><span className="private-multi-select-value">{value.length ? `${value.length} selecionado${value.length === 1 ? '' : 's'}` : emptyLabel}</span><ChevronDown size={15} aria-hidden="true" /></summary>
+      <div className="private-multi-select-panel">
+        <label className="private-search"><Search size={15} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Filtrar ${label.toLocaleLowerCase('pt-BR')}`} /></label>
+        <div className="private-multi-select-actions"><button type="button" onClick={toggleVisible} disabled={!visibleOptions.length}>{allVisibleSelected ? 'Desmarcar visíveis' : 'Selecionar visíveis'}</button><button type="button" onClick={() => onChange([])} disabled={!value.length}>Limpar seleção</button></div>
+        <div className="private-multi-select-options" role="group" aria-label={`${label} disponíveis`}>
+          {visibleOptions.map((option) => <label className="private-multi-select-option" key={option.value}><input type="checkbox" checked={selected.has(option.value)} onChange={() => toggle(option.value)} /><span>{option.label}</span>{option.meta && <small>{option.meta}</small>}</label>)}
+          {!visibleOptions.length && <EmptyState>Nenhuma opção corresponde à busca.</EmptyState>}
+        </div>
+        <div className="private-multi-select-panel-footer"><button type="button" onClick={() => { rootRef.current?.removeAttribute('open'); setSearch('') }}>Concluído</button></div>
+      </div>
+    </details>
   )
 }
 
